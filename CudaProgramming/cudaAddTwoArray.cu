@@ -29,11 +29,11 @@ const double EPSILON = 1.0e-15;
 const double a = 1.23;
 const double b = 2.34;
 const double c = 3.57;
-void __global__ add(const double* x, const double* y, double* z);
+void __global__ add(const double* x, const double* y, double* z, const int);
 void check(const double* z, const int N);
 
 int main(void) {
-    const int N = 1;
+    const int N = 10000001;
     const int M = sizeof(double) * N;
     double* x = (double*)malloc(M);
     double* y = (double*)malloc(M);
@@ -51,9 +51,9 @@ int main(void) {
     CHECK(cudaMemcpy(d_x, x, M, cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(d_y, y, M, cudaMemcpyHostToDevice));
 
-    const int block_size = 1;
-    const int grid_size = N / block_size;
-    add << <grid_size, block_size >> > (d_x, d_y, d_z);
+    const int block_size = 128;
+    const int grid_size = (N % block_size == 0) ? (N / block_size) : (N / block_size + 1);
+    add << <grid_size, block_size >> > (d_x, d_y, d_z, N);
     checkLastError();
 
     CHECK(cudaMemcpy(z, d_z, M, cudaMemcpyDeviceToHost));
@@ -69,8 +69,11 @@ int main(void) {
     return 0;
 }
 
-void __global__ add(const double* x, const double* y, double* z) {
+void __global__ add(const double* x, const double* y, double* z, const int N) {
     const int n = blockDim.x * blockIdx.x + threadIdx.x;
+    if (n >= N) {
+        return;
+    }
     z[n] = x[n] + y[n];
 }
 
