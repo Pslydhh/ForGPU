@@ -4,6 +4,7 @@
 
 #include "cuda_runtime.h"
 
+// There have strange access denied caused by hide this CHECK.
 void CHECK(cudaError_t call) {
     const cudaError_t error_code = call;
     if (error_code != cudaSuccess) {
