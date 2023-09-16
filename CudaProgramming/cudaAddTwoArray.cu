@@ -25,6 +25,10 @@ void checkLastError() {
     }
 }
 
+double __device__ add1_device(const double x, const double y) {
+    return x + y;
+}
+
 const double EPSILON = 1.0e-15;
 const double a = 1.23;
 const double b = 2.34;
@@ -74,7 +78,7 @@ void __global__ add(const double* x, const double* y, double* z, const int N) {
     if (n >= N) {
         return;
     }
-    z[n] = x[n] + y[n];
+    z[n] = add1_device(x[n], y[n]);
 }
 
 void check(const double* z, const int N) {
